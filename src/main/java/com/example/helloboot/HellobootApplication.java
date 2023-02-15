@@ -3,7 +3,11 @@ package com.example.helloboot;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 
+import javax.print.attribute.standard.Media;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -37,18 +41,21 @@ public class HellobootApplication {
                         @Override
                         protected void service(HttpServletRequest req, HttpServletResponse resp)
                             throws ServletException, IOException {
+                          String name = req.getParameter("name");
+
                           /**
                            * 서블릿을 만들었다고 해서 끝난게 아니다. 서블릿을 만들었으면 서블릿 컨테이너가 요청을 받았을 때 어떤 서블릿으로 매핑시켜줘야
                            * 하는지 또한 작업해줘야 한다. -> addMapping() 메소드 활용
                            */
-                          /** Http 응답을 해주기 위해 필요한 조건들
-                           *  1. Http 상태 라인
-                           *  2. Header
-                           *  3. Body
-                           *  */
-                          resp.setStatus(200);
-                          resp.setHeader("Content-Type", "text/plain");
-                          resp.getWriter().println("Hello Servlet");
+                          /** Http 응답을 해주기 위해 필요한 조건들 1. Http 상태 라인 2. Header 3. Body */
+
+                          /**
+                           * 스프링에서 제공해주는 enum 을 활용하자.
+                           * 오탈자가 생길 위험이 있기 때문
+                           */
+                          resp.setStatus(HttpStatus.OK.value());
+                          resp.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE);
+                          resp.getWriter().println("Hello " + name);
                         }
                       })
                   .addMapping("/hello");

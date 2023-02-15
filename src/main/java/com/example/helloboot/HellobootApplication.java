@@ -22,6 +22,8 @@ public class HellobootApplication {
     WebServer webServer =
         tomcatServletWebServerFactory.getWebServer(
             servletContext -> {
+              HelloController helloController = new HelloController();
+
               servletContext
                   .addServlet(
                       "frontcontroller",
@@ -31,12 +33,15 @@ public class HellobootApplication {
                             throws ServletException, IOException {
                           // 인증, 보안, 다국어, 공통 기능
                           // 서블릿 컨테이너가 담당하던 일을 프론트 컨트롤러가 맡아서 처리해야 한다.
-                          if (req.getRequestURI().equals("/hello") && req.getMethod().equals(HttpMethod.GET.name())) {
+                          if (req.getRequestURI().equals("/hello")
+                              && req.getMethod().equals(HttpMethod.GET.name())) {
                             String name = req.getParameter("name");
+
+                            String ret = helloController.hello(name); // A->B 로 변수 값을 넘겨주는 행위를 바인딩이라고 부른다, 헬로우 컨트롤러에서 비즈니스 로직이 실행되는 것으로 구현
 
                             resp.setStatus(HttpStatus.OK.value());
                             resp.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE);
-                            resp.getWriter().println("Hello " + name);
+                            resp.getWriter().println(ret);
                           } else if (req.getRequestURI().equals("/user")) {
                             //
                           } else {

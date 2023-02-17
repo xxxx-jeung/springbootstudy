@@ -1,5 +1,6 @@
 package com.example.helloboot;
 
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -8,11 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Objects;
 
 
-/**
- * 디스팩처 서블릿이 매핑 메소드를 일일이 찾을 수 있지만 그 만큼 시간이 오래걸린다.
- * 따라서 매핑 클래스용 이라고 클래스에다 애노테이션으로 명시해 놓으면 디스팩처 서블릿이 매핑 클래스를 찾고 매핑 메소드를 찾아낸다.
- */
-@RequestMapping("/hello")
+
+@RestController
 public class HelloController {
   private final HelloService helloService;
 
@@ -27,7 +25,6 @@ public class HelloController {
    * @return
    */
   @GetMapping
-  @ResponseBody
   public String hello(String name) {
     return helloService.sayHello(Objects.requireNonNull(name));
   }

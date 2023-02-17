@@ -3,47 +3,35 @@ package com.example.helloboot;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
-
-/**
- * ComponentScan 을 사용하면 애노테이션을 설정한 클래스를 찾아 Bean 으로 등록해준다.
- */
 @Configuration
 @ComponentScan
 public class HellobootApplication {
-  /**
-   * 간결하게 Bean 을 등록할 수 있는 기능이 존재
-   * @Component 애노테이션을 클래스 위에 작성해놓는다.
-   */
-  public static void main(String[] args) {
-    AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext() {
-      @Override
-      protected void onRefresh() {
-        super.onRefresh();
 
-        ServletWebServerFactory tomcatServletWebServerFactory = new TomcatServletWebServerFactory();
-        WebServer webServer =
-                tomcatServletWebServerFactory.getWebServer(
-                        servletContext -> {
-                          servletContext
-                                  .addServlet(
-                                          "dispatcherServlet ", new DispatcherServlet(this))
-                                  .addMapping("/*");
-                        });
-        webServer.start();
-      }
-    };
-    applicationContext.register(HellobootApplication.class);
-    applicationContext.refresh();
-
-
+  /** Bean으로 빼서 유연하게 서버구성을 변경할 수 있도록 할 수 있다. */
+  @Bean
+  public ServletWebServerFactory servletWebServerFactory() {
+    return new TomcatServletWebServerFactory();
   }
+
+  @Bean
+  public DispatcherServlet dispatcherServlet() {
+    return new DispatcherServlet(); // 웹어플리케이션 컨텍스트를 주입해줘야 하는데, 밖에다 Bean 등록 해 놓으면 사용 할 수 없다.
+    // 가능했던 이유는 스프링 컨테이너가 필요성을 알고 주입해주기 때문
+    // 이해하기 위해선 Bean Life Cycling 을 이해할 필요가 있다.
+    // ApplicationContextAware
+    // Bean 컨테이너가 등록하고 관리하는 도중에 Bean 을 주입해주고 관리해주는 역할을 한다.
+    // 컨테이너에 등록되어 있으면 구현된 Setter 메서드를 통해 주입을 해준다.
+  }
+
+  public static void main(String[] args) {
+    MySpringApplication.run(HellobootApplication.class, args);
+  }
+
+
 }

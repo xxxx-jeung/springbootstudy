@@ -20,21 +20,31 @@ import java.io.IOException;
 public class HellobootApplication {
 
   public static void main(String[] args) {
-    GenericWebApplicationContext applicationContext = new GenericWebApplicationContext(); // 어플리케이션 컨택스트의 종류는 매우 많다. 상황에 따라 바꿔가며 사용하면 되는데 디스팩쳐 서블릿을 사용하기 위해선 Web 어플리케이션 컨택스트를 사용해야 한다.
+    // 수정 목적은 기존에는 스프링 컨테이너가 올라가고 나서 작업을 진행했지만,
+    // 스프링 컨테이너가 올라가는 도중에 개발자가 정의한 작업을 실행하도록 하려고 한다. (스프링 부트가 이렇게 구성되어있음)
+    // 스프링 컨테이너가 올라갈 때 부가적으로 실행해야 항목이 있다면 onRefresh() 안에 정의해 놓으면 된다.
+    GenericWebApplicationContext applicationContext = new GenericWebApplicationContext() {
+      @Override
+      protected void onRefresh() {
+        super.onRefresh();
+
+        ServletWebServerFactory tomcatServletWebServerFactory = new TomcatServletWebServerFactory();
+        WebServer webServer =
+                tomcatServletWebServerFactory.getWebServer(
+                        servletContext -> {
+                          servletContext
+                                  .addServlet(
+                                          "dispatcherServlet ", new DispatcherServlet(this))
+                                  .addMapping("/*");
+                        });
+        webServer.start();
+      }
+    };
     applicationContext.registerBean(HelloController.class);
     applicationContext.registerBean(SimpleHelloService.class);
-    applicationContext.refresh();
+    // 여러개의 훅 메소드가 만들어져있다.
+    applicationContext.refresh(); // 스프링 컨테이너 초기화, 템플릿 메소드로 만들어져 있음. (템플릿 메소드는 상속을 통해서 기능을 확장한 의미)
 
-    ServletWebServerFactory tomcatServletWebServerFactory = new TomcatServletWebServerFactory();
-    WebServer webServer =
-        tomcatServletWebServerFactory.getWebServer(
-            servletContext -> {
-              // 프론트 컨트롤러 방식을 Spring 에서 제공하는 Servlet 을 사용하면 편리하다
-              servletContext
-                  .addServlet(
-                      "dispatcherServlet ", new DispatcherServlet(applicationContext)) // 에러가 발생하는데, 디스팩처 서블릿에게 요청을 받을 때 어떤 컨트롤러에게 전달해줘야 하는지 힌트를 하나도 주지 않은 상태, 이러한 작업을 xml 로 했지만 지금은 @RequestMapping 을 통해 명시해준다.
-                  .addMapping("/*");
-            });
-    webServer.start();
+
   }
 }

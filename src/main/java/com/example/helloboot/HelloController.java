@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
 
-
-
 @RestController
 public class HelloController implements ApplicationContextAware {
   private final HelloService helloService;
@@ -28,7 +26,7 @@ public class HelloController implements ApplicationContextAware {
    * @param name
    * @return
    */
-  @GetMapping
+  @GetMapping("/hello")
   public String hello(String name) {
     return helloService.sayHello(Objects.requireNonNull(name));
   }
